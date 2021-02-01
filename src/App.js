@@ -1,11 +1,40 @@
 import "./App.css"
 import React from "react"
+import { Line } from "react-chartjs-2"
+
+const data = {
+  labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+  datasets: [
+    {
+      label: "# of Votes",
+      data: [12, 19, 3, 5, 2, 3],
+      backgroundColor: [
+        "rgba(255, 99, 132, 0.2)",
+        "rgba(54, 162, 235, 0.2)",
+        "rgba(255, 206, 86, 0.2)",
+        "rgba(75, 192, 192, 0.2)",
+        "rgba(153, 102, 255, 0.2)",
+        "rgba(255, 159, 64, 0.2)",
+      ],
+      borderColor: [
+        "rgba(255, 99, 132, 1)",
+        "rgba(54, 162, 235, 1)",
+        "rgba(255, 206, 86, 1)",
+        "rgba(75, 192, 192, 1)",
+        "rgba(153, 102, 255, 1)",
+        "rgba(255, 159, 64, 1)",
+      ],
+      borderWidth: 1,
+    },
+  ],
+}
 
 class App extends React.Component {
   constructor(props) {
     super(props)
     this.localVideoRef = React.createRef()
     this.remoteVideoRef = React.createRef()
+    this.barChartRef = React.createRef()
 
     this.pc1 = null
     this.pc2 = null
@@ -16,6 +45,37 @@ class App extends React.Component {
     }
 
     this.state = { callBtn: false, hangBtn: true, localStream: null }
+  }
+  componentDidMount() {
+    console.log(this.barChartRef.current.chartInstance.update)
+    window.setInterval(() => {
+      if (this.pc1 === null) {
+        return
+      }
+      this.pc1.getStats(null).then((stats) => {
+        stats.forEach((report) => {
+          console.log(`Report: ${report.type}`)
+          console.log(`ID:${report.id}`)
+          console.log(`Timestamp:${report.timestamp}`)
+
+          // Now the statistics for this report; we intentially drop the ones we
+          // sorted to the top above
+          console.log("additional data")
+          Object.keys(report).forEach((statName) => {
+            if (
+              statName !== "id" &&
+              statName !== "timestamp" &&
+              statName !== "type"
+            ) {
+              console.log(`${statName} : ${report[statName]}`)
+            }
+          })
+        })
+        console.log("-------")
+
+        // document.querySelector(".stats-box").innerHTML = statsOutput;
+      })
+    }, 10000)
   }
 
   call = () => {
@@ -163,6 +223,12 @@ class App extends React.Component {
         <button disabled={this.state.hangBtn} onClick={this.hangUp}>
           HANG UP
         </button>
+        <Line
+          ref={this.barChartRef}
+          data={data}
+          width={300}
+          height={200}
+        ></Line>
       </div>
     )
   }
