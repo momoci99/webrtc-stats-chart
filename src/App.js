@@ -6,8 +6,8 @@ const data = {
   labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
   datasets: [
     {
-      label: "# of Votes",
-      data: [12, 19, 3, 5, 2, 3],
+      label: "# per frame",
+      data: [0, 0, 0, 0, 0, 0],
       backgroundColor: [
         "rgba(255, 99, 132, 0.2)",
         "rgba(54, 162, 235, 0.2)",
@@ -49,33 +49,38 @@ class App extends React.Component {
   componentDidMount() {
     console.log(this.barChartRef.current.chartInstance.update)
     window.setInterval(() => {
-      if (this.pc1 === null) {
+      if (this.pc2 === null) {
         return
       }
-      this.pc1.getStats(null).then((stats) => {
+      this.pc2.getStats().then((stats) => {
         stats.forEach((report) => {
-          console.log(`Report: ${report.type}`)
-          console.log(`ID:${report.id}`)
-          console.log(`Timestamp:${report.timestamp}`)
+          // console.log(`Report: ${report.type}`)
+          // console.log(`ID:${report.id}`)
+          // console.log(`Timestamp:${report.timestamp}`)
+          if (report.type === "inbound-rtp") {
+            // Now the statistics for this report; we intentially drop the ones we
+            // sorted to the top above
+            console.log("additional data")
+            Object.keys(report).forEach((statName) => {
+              if (
+                statName !== "id" &&
+                statName !== "timestamp" &&
+                statName !== "type"
+              ) {
+                if (statName === "framesPerSecond") {
+                  console.log(`${statName} : ${report[statName]}`)
+                  data.datasets[0].data.unshift(report[statName])
+                  data.datasets[0].data.pop()
 
-          // Now the statistics for this report; we intentially drop the ones we
-          // sorted to the top above
-          console.log("additional data")
-          Object.keys(report).forEach((statName) => {
-            if (
-              statName !== "id" &&
-              statName !== "timestamp" &&
-              statName !== "type"
-            ) {
-              console.log(`${statName} : ${report[statName]}`)
-            }
-          })
+                  this.barChartRef.current.chartInstance.update()
+                }
+              }
+            })
+          }
         })
         console.log("-------")
-
-        // document.querySelector(".stats-box").innerHTML = statsOutput;
       })
-    }, 10000)
+    }, 20000)
   }
 
   call = () => {
