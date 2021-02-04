@@ -1,9 +1,10 @@
 import "./App.css"
 import React from "react"
 import { Line } from "react-chartjs-2"
+import dayjs from "dayjs"
 
 const data = {
-  labels: ["Red", "Blue", "Yellow", "Green", "Purple", "Orange"],
+  labels: ["", "", "", "", "", ""],
   datasets: [
     {
       label: "# per frame",
@@ -71,6 +72,9 @@ class App extends React.Component {
                   console.log(`${statName} : ${report[statName]}`)
                   data.datasets[0].data.unshift(report[statName])
                   data.datasets[0].data.pop()
+
+                  data.labels.unshift(dayjs().format("HH:mm:ss"))
+                  data.labels.pop()
 
                   this.barChartRef.current.chartInstance.update()
                 }
