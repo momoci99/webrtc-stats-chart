@@ -1,7 +1,11 @@
-import "./App.css"
+import "./style/app.scss"
+import "./style/reset.scss"
+
 import React from "react"
 import { Line } from "react-chartjs-2"
 import dayjs from "dayjs"
+
+import Peer from "./components/Peer"
 
 const data = {
   labels: ["", "", "", "", "", ""],
@@ -33,8 +37,8 @@ const data = {
 class App extends React.Component {
   constructor(props) {
     super(props)
-    this.localVideoRef = React.createRef()
-    this.remoteVideoRef = React.createRef()
+    // this.localVideoRef = React.createRef()
+    // this.remoteVideoRef = React.createRef()
     this.barChartRef = React.createRef()
 
     this.pc1 = null
@@ -45,7 +49,12 @@ class App extends React.Component {
       offerToReceiveVideo: 1,
     }
 
-    this.state = { callBtn: false, hangBtn: true, localStream: null }
+    this.state = {
+      callBtn: false,
+      hangBtn: true,
+      localStream: null,
+      remoteStream: null,
+    }
   }
   componentDidMount() {
     console.log(this.barChartRef.current.chartInstance.update)
@@ -143,7 +152,6 @@ class App extends React.Component {
 
   hangUp = () => {
     console.log("Ending call")
-    console.log(this.state.localStream)
     this.state.localStream.getTracks().forEach((track) => track.stop())
     this.pc1.close()
     this.pc2.close()
@@ -191,8 +199,6 @@ class App extends React.Component {
     this.state.localStream
       .getTracks()
       .forEach((track) => this.pc1.addTrack(track, this.state.localStream))
-    this.localVideoRef.current.srcObject = this.state.localStream
-    console.log(this.localVideoRef)
     console.log("Adding Local Stream to peer connection")
 
     this.pc1
@@ -201,8 +207,8 @@ class App extends React.Component {
   }
 
   gotRemoteStream = (e) => {
-    if (this.remoteVideoRef.current.srcObject !== e.streams[0]) {
-      this.remoteVideoRef.current.srcObject = e.streams[0]
+    if (this.state.remoteStream !== e.streams[0]) {
+      this.setState({ remoteStream: e.streams[0] })
       console.log("Received remote stream")
     }
   }
@@ -217,27 +223,20 @@ class App extends React.Component {
 
   render() {
     return (
-      <div className="App">
-        <video
-          ref={this.localVideoRef}
-          playsInline
-          autoPlay
-          controls
-          muted
-        ></video>
-        <video ref={this.remoteVideoRef} playsInline autoPlay></video>
-        <button disabled={this.state.callBtn} onClick={this.call}>
-          CALL
-        </button>
-        <button disabled={this.state.hangBtn} onClick={this.hangUp}>
-          HANG UP
-        </button>
-        <Line
-          ref={this.barChartRef}
-          data={data}
-          width={300}
-          height={200}
-        ></Line>
+      <div className="app">
+        <section className="app__peer">
+          <Peer stream={this.state.localStream} isMuted={true}></Peer>
+          <Peer stream={this.state.remoteStream} isMuted={false}></Peer>
+        </section>
+
+        <section className="app__chart">
+          <Line
+            ref={this.barChartRef}
+            data={data}
+            width={300}
+            height={200}
+          ></Line>
+        </section>
       </div>
     )
   }
