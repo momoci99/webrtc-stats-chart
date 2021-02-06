@@ -1,0 +1,12 @@
+.app {
+}
+
+.app__peer {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+}
+
+.peer {
+  width: 100%;
+  height: 100%;
+}
