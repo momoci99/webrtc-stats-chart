@@ -6,6 +6,7 @@ import { Line } from "react-chartjs-2"
 import dayjs from "dayjs"
 
 import Peer from "./components/Peer"
+import Controls from "./components/Controls"
 
 const data = {
   labels: ["", "", "", "", "", ""],
@@ -227,6 +228,7 @@ class App extends React.Component {
         <section className="app__peer">
           <Peer stream={this.state.localStream} isMuted={true}></Peer>
           <Peer stream={this.state.remoteStream} isMuted={false}></Peer>
+          <Controls></Controls>
         </section>
 
         <section className="app__chart">
