@@ -1,25 +1,16 @@
 const initialState = {
-  behavior: {
-    call: true,
-    hangUp: false,
-  },
+  call: "END", //END, PROGRESSING
 }
 
 function callReducer(state = initialState, action) {
   switch (action.type) {
     case "CALL":
       return {
-        behavior: {
-          call: false,
-          hangUp: true,
-        },
+        call: "PROGRESSING",
       }
     case "HANGUP":
       return {
-        behavior: {
-          call: true,
-          hangUp: false,
-        },
+        call: "END",
       }
     default:
       return state

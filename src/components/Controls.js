@@ -1,22 +1,24 @@
 import React from "react"
-import store from "../redux/store"
+// import store from "../redux/store"
+import { connect } from "react-redux"
 
 class Controls extends React.Component {
-  call = () => {
-    store.dispatch({ type: "CALL" })
-    console.log(store.getState())
-  }
-  hangUp = () => {
-    store.dispatch({ type: "HANGUP" })
-    console.log(store.getState())
-  }
-
   render() {
     return (
       <menu>
         controls
-        <button onClick={this.call}>CALL</button>
-        <button onClick={this.hangUp}>HANG UP</button>
+        <button
+          disabled={this.props.call !== "END"}
+          onClick={this.props.callPeer}
+        >
+          CALL
+        </button>
+        <button
+          disabled={this.props.call !== "PROGRESSING"}
+          onClick={this.props.hangUp}
+        >
+          HANG UP
+        </button>
         {/* bitrate  */}
         {/* framerate  */}
         {/* 기타 컨트롤러 들어갈 예정 */}
@@ -24,5 +26,14 @@ class Controls extends React.Component {
     )
   }
 }
+const mapStateToProps = (state) => ({
+  call: state.call,
+})
 
-export default Controls
+const mapDispatchToProps = (dispatch) => {
+  return {
+    callPeer: () => dispatch({ type: "CALL" }),
+    hangUp: () => dispatch({ type: "HANGUP" }),
+  }
+}
+export default connect(mapStateToProps, mapDispatchToProps)(Controls)

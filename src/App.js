@@ -38,8 +38,7 @@ const data = {
 class App extends React.Component {
   constructor(props) {
     super(props)
-    // this.localVideoRef = React.createRef()
-    // this.remoteVideoRef = React.createRef()
+
     this.barChartRef = React.createRef()
 
     this.pc1 = null
@@ -51,8 +50,6 @@ class App extends React.Component {
     }
 
     this.state = {
-      callBtn: false,
-      hangBtn: true,
       localStream: null,
       remoteStream: null,
     }
