@@ -8,6 +8,8 @@ import dayjs from "dayjs"
 import Peer from "./components/Peer"
 import Controls from "./components/Controls"
 
+import { connect } from "react-redux"
+
 const data = {
   labels: ["", "", "", "", "", ""],
   datasets: [
@@ -54,7 +56,15 @@ class App extends React.Component {
       remoteStream: null,
     }
   }
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.call === "PROGRESSING" && prevProps.call === "END") {
+      this.call()
+    } else if (this.props.call === "END" && prevProps.call === "PROGRESSING") {
+      this.hangUp()
+    }
+  }
   componentDidMount() {
+    const socket = new WebSocket("ws://localhost:3030/")
     console.log(this.barChartRef.current.chartInstance.update)
     window.setInterval(() => {
       if (this.pc2 === null) {
@@ -95,7 +105,7 @@ class App extends React.Component {
   }
 
   call = () => {
-    this.setState({ callBtn: false })
+    // this.setState({ callBtn: false })
     // bandwidthSelector.disabled = false
     // frameSelector.disabled = false
 
@@ -155,10 +165,10 @@ class App extends React.Component {
     this.pc2.close()
     this.pc1 = null
     this.pc2 = null
-    this.setState({
-      hangBtn: false,
-      callBtn: false,
-    })
+    // this.setState({
+    //   hangBtn: false,
+    //   callBtn: false,
+    // })
 
     // bandwidthSelector.disabled = true
   }
@@ -189,7 +199,7 @@ class App extends React.Component {
   }
 
   gotStream = (stream) => {
-    this.setState({ hangBtn: false })
+    // this.setState({ hangBtn: false })
 
     console.log("Received local stream")
     this.setState({ localStream: stream })
@@ -241,4 +251,8 @@ class App extends React.Component {
   }
 }
 
-export default App
+const mapStateToProps = (state) => ({
+  call: state.call,
+})
+
+export default connect(mapStateToProps, null)(App)

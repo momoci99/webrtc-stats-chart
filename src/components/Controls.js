@@ -1,5 +1,4 @@
 import React from "react"
-// import store from "../redux/store"
 import { connect } from "react-redux"
 
 class Controls extends React.Component {
