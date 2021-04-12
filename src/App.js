@@ -80,7 +80,7 @@ class App extends React.Component {
   componentDidMount() {
     // const socket = new WebSocket("ws://localhost:3030/")
     // socket.send()
-    this.connect()
+
     console.log(this.barChartRef.current.chartInstance.update)
     // window.setInterval(() => {
     //   if (this.pc2 === null) {
@@ -121,22 +121,7 @@ class App extends React.Component {
   }
 
   call = () => {
-    // this.setState({ callBtn: false })
-    // bandwidthSelector.disabled = false
-    // frameSelector.disabled = false
-
-    // console.log("Starting call")
-    // const servers = null
-    // this.pc1 = new RTCPeerConnection(servers)
-    // console.log("Created local peer connection object pc1")
-    // this.pc1.onicecandidate = this.onIceCandidate.bind(this.pc1)
-
-    // this.pc2 = new RTCPeerConnection(servers)
-    // console.log("Created remote peer connection object pc2")
-    // this.pc2.onicecandidate = this.onIceCandidate.bind(this.pc2)
-    // this.pc2.ontrack = this.gotRemoteStream
-
-    // console.log("Requesting local stream")
+    this.connect()
     const peer = this.createPeerConnection()
     this.setState({
       pc1: peer,
@@ -156,43 +141,9 @@ class App extends React.Component {
       .catch((e) => console.error(e))
   }
 
-  // gotDescription1 = (desc) => {
-  //   console.log("Offer from pc1 \n" + desc.sdp)
-  //   this.state.pc1.setLocalDescription(desc).then(() => {
-  //     this.pc2
-  //       .setRemoteDescription(desc)
-  //       .then(
-  //         () =>
-  //           this.pc2
-  //             .createAnswer()
-  //             .then(this.gotDescription2, this.onCreateSessionDescriptionError),
-  //         this.onSetSessionDescriptionError
-  //       )
-  //   }, this.onSetSessionDescriptionError)
-  // }
-
-  // gotDescription2 = (desc) => {
-  //   this.pc2.setLocalDescription(desc).then(() => {
-  //     console.log("Answer from pc2 \n" + desc.sdp)
-  //     let p
-  //     p = this.pc1.setRemoteDescription(desc)
-  //     p.then(() => {}, this.onSetSessionDescriptionError)
-  //   }, this.onSetSessionDescriptionError)
-  // }
-
   hangUp = () => {
     console.log("Ending call")
-    // this.state.localStream.getTracks().forEach((track) => track.stop())
-    // this.pc1.close()
-    // this.pc2.close()
-    // this.pc1 = null
-    // this.pc2 = null
-    // this.setState({
-    //   hangBtn: false,
-    //   callBtn: false,
-    // })
 
-    // bandwidthSelector.disabled = true
     if (this.state.pc1) {
       if (this.state.remoteStream) {
         this.state.remoteStream.getTracks().forEach((track) => track.stop())
@@ -244,36 +195,12 @@ class App extends React.Component {
     console.log("Failed to set session description: " + error.toString())
   }
 
-  // gotStream = (stream) => {
-  //   // this.setState({ hangBtn: false })
-
-  //   console.log("Received local stream")
-  //   this.setState({ localStream: stream })
-
-  //   this.state.localStream
-  //     .getTracks()
-  //     .forEach((track) => this.pc1.addTrack(track, this.state.localStream))
-  //   console.log("Adding Local Stream to peer connection")
-
-  //   this.pc1
-  //     .createOffer(this.offerOptions)
-  //     .then(this.gotDescription1, this.onCreateSessionDescriptionError)
-  // }
-
   gotRemoteStream = (e) => {
     if (this.state.remoteStream !== e.streams[0]) {
       this.setState({ remoteStream: e.streams[0] })
       console.log("Received remote stream")
     }
   }
-
-  // getOtherPc = (pc) => {
-  //   return pc === this.pc1 ? this.pc2 : this.pc1
-  // }
-
-  // getName = (pc) => {
-  //   return pc === this.pc1 ? "pc1" : "pc2"
-  // }
 
   createPeerConnection = () => {
     const myPeerConnection = new RTCPeerConnection({
@@ -346,11 +273,14 @@ class App extends React.Component {
     var localStream = null
 
     this.setState({ targetName: msg.name })
-    this.createPeerConnection()
+    const peer = this.createPeerConnection()
+    this.setState({
+      pc1: peer,
+    })
 
     var desc = new RTCSessionDescription(msg.sdp)
 
-    this.pc1
+    this.state.pc1
       .setRemoteDescription(desc)
       .then(() => {
         return navigator.mediaDevices.getUserMedia(mediaConstraints)
@@ -361,10 +291,10 @@ class App extends React.Component {
 
         localStream
           .getTracks()
-          .forEach((track) => this.pc1.addTrack(track, localStream))
+          .forEach((track) => this.state.pc1.addTrack(track, localStream))
       })
       .then(() => {
-        return this.pc1.createAnswer()
+        return this.state.pc1.createAnswer()
       })
       .then((answer) => {
         return this.state.pc1.setLocalDescription(answer)
@@ -393,19 +323,25 @@ class App extends React.Component {
   }
 
   handleNewICECandidateMsg = (msg) => {
-    var candidate = new RTCIceCandidate(msg.candidate)
+    const candidate = new RTCIceCandidate(msg.candidate)
 
-    this.state.pc1.addIceCandidate(candidate).catch((error) => {
-      console.log(error)
-    })
+    if (!this.state.pc1 || !this.state.pc1.remoteDescription.type) {
+      console.log("candidate::", candidate)
+      this.state.pc1.addIceCandidate(candidate).catch((error) => {
+        console.log(error)
+        console.log(error.name)
+      })
+    }
   }
 
   handleTrackEvent = (event) => {
-    document.getElementById("received_video").srcObject = event.streams[0]
-    document.getElementById("hangup-button").disabled = false
+    this.setState({ localStream: event.stream[0] })
+    // document.getElementById("received_video").srcObject = event.streams[0]
+    // document.getElementById("hangup-button").disabled = false
   }
 
   handleRemoveTrackEvent = (event) => {
+    //@todo : fix it!
     const stream = document.getElementById("received_video").srcObject
     const trackList = stream.getTracks()
 
@@ -447,7 +383,7 @@ class App extends React.Component {
         localVideo.srcObject.getTracks().forEach((track) => track.stop())
       }
 
-      this.setState.close()
+      this.state.pc1.close()
       this.setState({ pc1: null })
     }
 
