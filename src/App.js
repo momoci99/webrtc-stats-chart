@@ -258,8 +258,8 @@ class App extends React.Component {
       })
       .then(() => {
         this.sendToServer({
-          name: "aaa", //수정 필요함.
-          target: "bbb", //수정 필요함.
+          name: this.state.myName,
+          target: this.state.targetName,
           type: "video-offer",
           sdp: this.state.pc1.localDescription,
         })
@@ -280,6 +280,8 @@ class App extends React.Component {
 
     var desc = new RTCSessionDescription(msg.sdp)
 
+    console.log("setting remote description", desc)
+
     this.state.pc1
       .setRemoteDescription(desc)
       .then(() => {
@@ -287,7 +289,7 @@ class App extends React.Component {
       })
       .then((stream) => {
         localStream = stream
-        document.getElementById("local_video").srcObject = localStream
+        // document.getElementById("local_video").srcObject = localStream
 
         localStream
           .getTracks()
@@ -322,20 +324,16 @@ class App extends React.Component {
     }
   }
 
-  handleNewICECandidateMsg = (msg) => {
+  handleNewICECandidateMsg = async (msg) => {
     const candidate = new RTCIceCandidate(msg.candidate)
 
-    if (!this.state.pc1 || !this.state.pc1.remoteDescription.type) {
-      console.log("candidate::", candidate)
-      this.state.pc1.addIceCandidate(candidate).catch((error) => {
-        console.log(error)
-        console.log(error.name)
-      })
-    }
+    console.log("candidate::", candidate)
+    await this.state.pc1.addIceCandidate(candidate)
   }
 
   handleTrackEvent = (event) => {
-    this.setState({ localStream: event.stream[0] })
+    console.log(event)
+    this.setState({ localStream: event.streams[0] })
     // document.getElementById("received_video").srcObject = event.streams[0]
     // document.getElementById("hangup-button").disabled = false
   }
@@ -565,6 +563,18 @@ class App extends React.Component {
 
     //   listElem.appendChild(item)
     // })
+  }
+
+  handleVideoAnswerMsg = async (msg) => {
+    console.log("*** Call recipient has accepted our call")
+
+    // Configure the remote description, which is the SDP payload
+    // in our "video-answer" message.
+
+    var desc = new RTCSessionDescription(msg.sdp)
+    await this.state.pc1
+      .setRemoteDescription(desc)
+      .catch((error) => console.log(error))
   }
 
   myNameChange = (event) => {
