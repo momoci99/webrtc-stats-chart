@@ -1,6 +1,7 @@
 import React from "react"
 import ReactDOM from "react-dom"
-import "./style/index.scss"
+import "./style/reset.scss"
+import "./style/layout.scss"
 // import { createStore } from "redux"
 import App from "./App"
 import reportWebVitals from "./reportWebVitals"
@@ -15,7 +16,7 @@ ReactDOM.render(
       <App />
     </Provider>
   </React.StrictMode>,
-  document.getElementById("root")
+  document.getElementById("layout")
 )
 
 // If you want to start measuring performance in your app, pass a function

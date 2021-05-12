@@ -1,4 +1,5 @@
 import React from "react"
+import "../style/peer.scss"
 
 class Peer extends React.Component {
   constructor(props) {
@@ -23,11 +24,11 @@ class Peer extends React.Component {
   render() {
     return (
       <video
+        className="peer"
         ref={this.videoRef}
         src={this.props.stream}
         playsInline
         autoPlay
-        className="peer"
         muted={this.props.isMuted}
       ></video>
     )

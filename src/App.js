@@ -1,5 +1,4 @@
 import "./style/app.scss"
-import "./style/reset.scss"
 
 import React from "react"
 import { Line } from "react-chartjs-2"
@@ -54,7 +53,7 @@ class App extends React.Component {
   constructor(props) {
     super(props)
 
-    this.barChartRef = React.createRef()
+    // this.barChartRef = React.createRef()
 
     this.offerOptions = {
       offerToReceiveAudio: 0,
@@ -78,7 +77,7 @@ class App extends React.Component {
     }
   }
   componentDidMount() {
-    console.log(this.barChartRef.current.chartInstance.update)
+    // console.log(this.barChartRef.current.chartInstance.update)
     // window.setInterval(() => {
     //   if (this.pc2 === null) {
     //     return
@@ -102,10 +101,8 @@ class App extends React.Component {
     //               console.log(`${statName} : ${report[statName]}`)
     //               data.datasets[0].data.unshift(report[statName])
     //               data.datasets[0].data.pop()
-
     //               data.labels.unshift(dayjs().format("HH:mm:ss"))
     //               data.labels.pop()
-
     //               this.barChartRef.current.chartInstance.update()
     //             }
     //           }
@@ -554,28 +551,31 @@ class App extends React.Component {
   render() {
     return (
       <div className="app">
-        <section className="app__peer">
-          <Peer stream={this.state.localStream} isMuted={true}></Peer>
-          <Peer stream={this.state.remoteStream} isMuted={false}></Peer>
-          <Controls></Controls>
-          <textarea
-            value={this.state.myName}
-            onChange={this.myNameChange}
-          ></textarea>
-          <textarea
-            value={this.state.targetName}
-            onChange={this.targetNameChange}
-          ></textarea>
+        <section className="app__peers">
+          <div className="peers__panel">
+            <Peer stream={this.state.localStream} isMuted={true}></Peer>
+            <textarea
+              value={this.state.myName}
+              onChange={this.myNameChange}
+            ></textarea>
+          </div>
+          <div className="peers__panel">
+            <Peer stream={this.state.remoteStream} isMuted={false}></Peer>
+            <textarea
+              value={this.state.targetName}
+              onChange={this.targetNameChange}
+            ></textarea>
+          </div>
         </section>
-
-        <section className="app__chart">
+        <Controls></Controls>
+        {/* <section className="app__chart">
           <Line
             ref={this.barChartRef}
             data={data}
             width={300}
             height={200}
           ></Line>
-        </section>
+        </section> */}
       </div>
     )
   }
