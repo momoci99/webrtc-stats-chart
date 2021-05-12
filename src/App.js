@@ -78,9 +78,6 @@ class App extends React.Component {
     }
   }
   componentDidMount() {
-    // const socket = new WebSocket("ws://localhost:3030/")
-    // socket.send()
-
     console.log(this.barChartRef.current.chartInstance.update)
     // window.setInterval(() => {
     //   if (this.pc2 === null) {
@@ -222,9 +219,12 @@ class App extends React.Component {
     myPeerConnection.ontrack = this.handleTrackEvent
     myPeerConnection.onnegotiationneeded = this.handleNegotiationNeededEvent
     myPeerConnection.onremovetrack = this.handleRemoveTrackEvent
-    myPeerConnection.oniceconnectionstatechange = this.handleICEConnectionStateChangeEvent
-    myPeerConnection.onicegatheringstatechange = this.handleICEGatheringStateChangeEvent
-    myPeerConnection.onsignalingstatechange = this.handleSignalingStateChangeEvent
+    myPeerConnection.oniceconnectionstatechange =
+      this.handleICEConnectionStateChangeEvent
+    myPeerConnection.onicegatheringstatechange =
+      this.handleICEGatheringStateChangeEvent
+    myPeerConnection.onsignalingstatechange =
+      this.handleSignalingStateChangeEvent
 
     return myPeerConnection
   }
@@ -334,12 +334,9 @@ class App extends React.Component {
   handleTrackEvent = (event) => {
     console.log(event)
     this.setState({ localStream: event.streams[0] })
-    // document.getElementById("received_video").srcObject = event.streams[0]
-    // document.getElementById("hangup-button").disabled = false
   }
 
   handleRemoveTrackEvent = (event) => {
-    //@todo : fix it!
     const stream = document.getElementById("received_video").srcObject
     const trackList = stream.getTracks()
 
@@ -485,14 +482,6 @@ class App extends React.Component {
           console.log("rejectusername")
           break
 
-        case "userlist": // Received an updated user list
-          this.handleUserlistMsg(msg)
-          break
-
-        // Signaling messages: these messages are used to trade WebRTC
-        // signaling information during negotiations leading up to a video
-        // call.
-
         case "video-offer": // Invitation and offer to chat
           this.handleVideoOfferMsg(msg)
           break
@@ -540,29 +529,6 @@ class App extends React.Component {
 
     console.log("Sending '" + msg.type + "' message: " + msgJSON)
     connection.send(msgJSON)
-  }
-
-  handleUserlistMsg = (msg) => {
-    var i
-    // var listElem = document.querySelector(".userlistbox")
-
-    // // Remove all current list members. We could do this smarter,
-    // // by adding and updating users instead of rebuilding from
-    // // scratch but this will do for this sample.
-
-    // while (listElem.firstChild) {
-    //   listElem.removeChild(listElem.firstChild)
-    // }
-
-    // // Add member names from the received list.
-
-    // msg.users.forEach(function (username) {
-    //   var item = document.createElement("li")
-    //   item.appendChild(document.createTextNode(username))
-    //   item.addEventListener("click", invite, false)
-
-    //   listElem.appendChild(item)
-    // })
   }
 
   handleVideoAnswerMsg = async (msg) => {
