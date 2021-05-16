@@ -9,6 +9,8 @@ import Controls from "./components/Controls"
 
 import { connect } from "react-redux"
 
+import Input from "@material-ui/core/Input"
+
 let connection = null
 
 const mediaConstraints = {
@@ -554,20 +556,26 @@ class App extends React.Component {
         <section className="app__peers">
           <div className="peers__panel">
             <Peer stream={this.state.localStream} isMuted={true}></Peer>
-            <textarea
+            <Input
+              className="peers__name"
               value={this.state.myName}
+              placeholder="My Name"
+              inputProps={{ "aria-label": "description" }}
               onChange={this.myNameChange}
-            ></textarea>
+            />
           </div>
           <div className="peers__panel">
             <Peer stream={this.state.remoteStream} isMuted={false}></Peer>
-            <textarea
+            <Input
+              className="peers__name"
               value={this.state.targetName}
+              placeholder="Target Name"
+              inputProps={{ "aria-label": "description" }}
               onChange={this.targetNameChange}
-            ></textarea>
+            />
           </div>
+          <Controls></Controls>
         </section>
-        <Controls></Controls>
         {/* <section className="app__chart">
           <Line
             ref={this.barChartRef}

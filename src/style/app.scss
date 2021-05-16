@@ -3,15 +3,15 @@
 
 .app__peers {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   grid-gap: 20px;
 }
 
 .peers__panel {
   display: grid;
+  grid-column-start: span 2;
 }
 
-.peer {
-  width: 300px;
-  height: 300px;
+.peers__name {
+  margin-top: 10px;
 }
