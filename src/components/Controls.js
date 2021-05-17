@@ -1,6 +1,8 @@
 import React from "react"
 import { connect } from "react-redux"
 
+import "../style/controls.scss"
+
 import CallIcon from "@material-ui/icons/Call"
 import CallEndIcon from "@material-ui/icons/CallEnd"
 class Controls extends React.Component {
@@ -8,18 +10,24 @@ class Controls extends React.Component {
     return (
       <menu>
         <button
+          className={`control__call start ${
+            this.props.call !== "END" ? "disabled" : ""
+          }`}
           disabled={this.props.call !== "END"}
           onClick={this.props.callPeer}
         >
           <CallIcon fontSize="large"></CallIcon>
-          CALL
         </button>
         <button
+          className={`
+            control__call hangup ${
+              this.props.call !== "PROGRESSING" ? "disabled" : ""
+            }
+          `}
           disabled={this.props.call !== "PROGRESSING"}
           onClick={this.props.hangUp}
         >
           <CallEndIcon fontSize="large"></CallEndIcon>
-          HANG UP
         </button>
 
         {/* bitrate  */}

@@ -1,0 +1,15 @@
+.control__call {
+  border-radius: 50%;
+
+  &.start {
+    color: rgb(30, 197, 114);
+  }
+
+  &.hangup {
+    color: rgb(236, 45, 81);
+  }
+
+  &.disabled {
+    color: gray;
+  }
+}
