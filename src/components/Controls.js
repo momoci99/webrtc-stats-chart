@@ -29,10 +29,6 @@ class Controls extends React.Component {
         >
           <CallEndIcon fontSize="large"></CallEndIcon>
         </button>
-
-        {/* bitrate  */}
-        {/* framerate  */}
-        {/* 기타 컨트롤러 들어갈 예정 */}
       </menu>
     )
   }

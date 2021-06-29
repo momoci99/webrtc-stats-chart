@@ -1,8 +1,6 @@
 import "./style/app.scss"
 
 import React from "react"
-import { Line } from "react-chartjs-2"
-import dayjs from "dayjs"
 
 import Peer from "./components/Peer"
 import Controls from "./components/Controls"
@@ -11,10 +9,17 @@ import { connect } from "react-redux"
 
 import Input from "@material-ui/core/Input"
 
+import {
+  createPeerConnection,
+  onAddIceCandidateSuccess,
+  onAddIceCandidateError,
+  resetPeerCallBack,
+} from "./utils/Connection"
+
 let connection = null
 
 const mediaConstraints = {
-  audio: true, // We want an audio track
+  audio: true,
   video: {
     aspectRatio: {
       ideal: 1.333333, // 3:2 aspect is preferred
@@ -22,40 +27,11 @@ const mediaConstraints = {
   },
 }
 
-const data = {
-  labels: ["", "", "", "", "", ""],
-  datasets: [
-    {
-      label: "# per frame",
-      data: [0, 0, 0, 0, 0, 0],
-      backgroundColor: [
-        "rgba(255, 99, 132, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-        "rgba(255, 159, 64, 0.2)",
-      ],
-      borderColor: [
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)",
-      ],
-      borderWidth: 1,
-    },
-  ],
-}
-
 let clientID = 0
 
 class App extends React.Component {
   constructor(props) {
     super(props)
-
-    // this.barChartRef = React.createRef()
 
     this.offerOptions = {
       offerToReceiveAudio: 0,
@@ -78,43 +54,6 @@ class App extends React.Component {
       this.hangUp()
     }
   }
-  componentDidMount() {
-    // console.log(this.barChartRef.current.chartInstance.update)
-    // window.setInterval(() => {
-    //   if (this.pc2 === null) {
-    //     return
-    //   }
-    //   this.pc2.getStats().then((stats) => {
-    //     stats.forEach((report) => {
-    //       // console.log(`Report: ${report.type}`)
-    //       // console.log(`ID:${report.id}`)
-    //       // console.log(`Timestamp:${report.timestamp}`)
-    //       if (report.type === "inbound-rtp") {
-    //         // Now the statistics for this report; we intentially drop the ones we
-    //         // sorted to the top above
-    //         console.log("additional data")
-    //         Object.keys(report).forEach((statName) => {
-    //           if (
-    //             statName !== "id" &&
-    //             statName !== "timestamp" &&
-    //             statName !== "type"
-    //           ) {
-    //             if (statName === "framesPerSecond") {
-    //               console.log(`${statName} : ${report[statName]}`)
-    //               data.datasets[0].data.unshift(report[statName])
-    //               data.datasets[0].data.pop()
-    //               data.labels.unshift(dayjs().format("HH:mm:ss"))
-    //               data.labels.pop()
-    //               this.barChartRef.current.chartInstance.update()
-    //             }
-    //           }
-    //         })
-    //       }
-    //     })
-    //     console.log("-------")
-    //   })
-    // }, 20000)
-  }
 
   call = () => {
     this.connect()
@@ -124,7 +63,6 @@ class App extends React.Component {
     })
     navigator.mediaDevices
       .getUserMedia({
-        // video: { frameRate: { ideal: 10, max: 15 } },
         video: true,
         audio: true,
         frameRate: {
@@ -156,6 +94,7 @@ class App extends React.Component {
       this.state.pc1.close()
       this.setState({ pc1: null })
     }
+
     this.setState({
       targetName: "",
     })
@@ -169,26 +108,14 @@ class App extends React.Component {
   onIceCandidate = (event) => {
     this.getOtherPc(this)
       .addIceCandidate(event.candidate)
-      .then(this.onAddIceCandidateSuccess)
-      .catch(this.onAddIceCandidateError)
+      .then(onAddIceCandidateSuccess)
+      .catch(onAddIceCandidateError)
 
     console.log(
       `${this.getName(this)} ICE candidate:\n${
         event.candidate ? event.candidate.candidate : "(null)"
       }`
     )
-  }
-
-  onAddIceCandidateSuccess = () => {
-    console.log("AddIceCandidate success.")
-  }
-
-  onAddIceCandidateError = (error) => {
-    console.log("Failed to add ICE Candidate: " + error.toString())
-  }
-
-  onSetSessionDescriptionError = (error) => {
-    console.log("Failed to set session description: " + error.toString())
   }
 
   gotRemoteStream = (e) => {
@@ -198,22 +125,16 @@ class App extends React.Component {
     }
   }
 
+  //자신의 peer connection 객체 생성
   createPeerConnection = () => {
-    const myPeerConnection = new RTCPeerConnection({
-      iceServers: [
-        // Information about ICE servers - Use your own!
-        {
-          urls: [
-            "stun:stun.l.google.com:19302",
-            "stun:stun1.l.google.com:19302",
-            "stun:stun2.l.google.com:19302",
-            "stun:stun3.l.google.com:19302",
-            "stun:stun4.l.google.com:19302",
-          ],
-        },
-      ],
-    })
+    const myPeerConnection = createPeerConnection()
+    this.setCallBack()
 
+    return myPeerConnection
+  }
+
+  //peer connection 이벤트 콜백 함수 설정
+  setCallBack = (myPeerConnection) => {
     myPeerConnection.onicecandidate = this.handleICECandidateEvent
     myPeerConnection.ontrack = this.handleTrackEvent
     myPeerConnection.onnegotiationneeded = this.handleNegotiationNeededEvent
@@ -224,8 +145,6 @@ class App extends React.Component {
       this.handleICEGatheringStateChangeEvent
     myPeerConnection.onsignalingstatechange =
       this.handleSignalingStateChangeEvent
-
-    return myPeerConnection
   }
 
   handleGetUserMediaError(e) {
@@ -269,7 +188,7 @@ class App extends React.Component {
   }
 
   handleVideoOfferMsg = (msg) => {
-    var localStream = null
+    let localStream = null
 
     this.setState({ targetName: msg.name })
     const peer = this.createPeerConnection()
@@ -277,7 +196,7 @@ class App extends React.Component {
       pc1: peer,
     })
 
-    var desc = new RTCSessionDescription(msg.sdp)
+    const desc = new RTCSessionDescription(msg.sdp)
 
     console.log("setting remote description", desc)
 
@@ -288,7 +207,6 @@ class App extends React.Component {
       })
       .then((stream) => {
         localStream = stream
-        // document.getElementById("local_video").srcObject = localStream
 
         localStream
           .getTracks()
@@ -354,19 +272,12 @@ class App extends React.Component {
   }
 
   closeVideoCall = () => {
-    var remoteVideo = document.getElementById("received_video")
-    var localVideo = document.getElementById("local_video")
+    let remoteVideo = document.getElementById("received_video")
+    let localVideo = document.getElementById("local_video")
 
     if (this.state.pc1) {
-      const pc1 = this.state.pc1
-      pc1.ontrack = null
-      pc1.onremovetrack = null
-      pc1.onremovestream = null
-      pc1.onicecandidate = null
-      pc1.oniceconnectionstatechange = null
-      pc1.onsignalingstatechange = null
-      pc1.onicegatheringstatechange = null
-      pc1.onnegotiationneeded = null
+      let pc1 = this.state.pc1
+      pc1 = resetPeerCallBack(pc1)
       this.setState({ pc1: pc1 })
 
       if (remoteVideo.srcObject) {
@@ -536,7 +447,7 @@ class App extends React.Component {
     // Configure the remote description, which is the SDP payload
     // in our "video-answer" message.
 
-    var desc = new RTCSessionDescription(msg.sdp)
+    const desc = new RTCSessionDescription(msg.sdp)
     await this.state.pc1
       .setRemoteDescription(desc)
       .catch((error) => console.log(error))
@@ -576,14 +487,6 @@ class App extends React.Component {
           </div>
           <Controls></Controls>
         </section>
-        {/* <section className="app__chart">
-          <Line
-            ref={this.barChartRef}
-            data={data}
-            width={300}
-            height={200}
-          ></Line>
-        </section> */}
       </div>
     )
   }
